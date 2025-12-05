@@ -71,3 +71,34 @@ def test_move_old_files(tmp_path):
     assert (old_dir / "file.txt").exists()
     assert (old_dir / "file_v1.txt").exists()
 
+    assert (old_dir / "file.txt").exists()
+    assert (old_dir / "file_v1.txt").exists()
+
+def test_move_old_files_with_directory(tmp_path):
+    # Setup
+    d = tmp_path / "data"
+    d.mkdir()
+    (d / "file.txt").write_text("content")
+    (d / "subdir").mkdir()
+    
+    # Action
+    move_old_files(str(d), [])
+    
+    # Verify
+    assert (d / "subdir").exists() # Should not be moved
+    assert (d / "old" / "file.txt").exists() # Should be moved
+
+def test_move_old_files_keep_set(tmp_path):
+    # Setup
+    d = tmp_path / "data"
+    d.mkdir()
+    (d / "file.txt").write_text("content")
+    
+    # Action
+    # Keep file.txt
+    move_old_files(str(d), ["file.txt"])
+    
+    # Verify
+    assert (d / "file.txt").exists()
+    assert not (d / "old").exists()
+

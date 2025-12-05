@@ -50,7 +50,7 @@ def test_main_block():
     import sys
     
     # Just run it with --help to ensure it runs
-    result = subprocess.run([sys.executable, "src/main.py", "--help"], capture_output=True, text=True)
+    result = subprocess.run([sys.executable, "-m", "src.main", "--help"], capture_output=True, text=True)
     assert result.returncode == 0
     assert "usage:" in result.stdout
 

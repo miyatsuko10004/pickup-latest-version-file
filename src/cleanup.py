@@ -1,5 +1,6 @@
 import re
 import os
+import shutil
 
 def parse_filename(filename):
     """
@@ -52,7 +53,7 @@ def determine_latest_files(filenames):
     return latest_files
 
 
-import shutil
+
 
 def move_old_files(directory, keep_filenames):
     """

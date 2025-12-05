@@ -71,8 +71,7 @@ def test_move_old_files(tmp_path):
     assert (old_dir / "file.txt").exists()
     assert (old_dir / "file_v1.txt").exists()
 
-    assert (old_dir / "file.txt").exists()
-    assert (old_dir / "file_v1.txt").exists()
+
 
 def test_move_old_files_with_directory(tmp_path):
     # Setup

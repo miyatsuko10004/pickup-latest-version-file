@@ -1,7 +1,7 @@
 [project]
 name = "pickup-latest-version-file"
 version = "0.1.0"
-description = "Add your description here"
+description = "ディレクトリ内のファイルを整理し、最新版のみを残して古いファイルをoldディレクトリに移動するツール"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

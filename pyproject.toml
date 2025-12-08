@@ -9,7 +9,7 @@ dependencies = [
 ]
 
 [project.scripts]
-pickup-files = "main:main"
+pickup-files = "src.main:main"
 [project.optional-dependencies]
 dev = [
     "pytest>=9.0.1",

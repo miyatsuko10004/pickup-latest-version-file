@@ -2,7 +2,10 @@ import os
 import argparse
 import re
 from dotenv import load_dotenv
-from cleanup import group_and_identify_old_for_pattern, move_files_to_old
+try:
+    from .cleanup import group_and_identify_old_for_pattern, move_files_to_old
+except ImportError:
+    from cleanup import group_and_identify_old_for_pattern, move_files_to_old
 
 def main():
     load_dotenv()

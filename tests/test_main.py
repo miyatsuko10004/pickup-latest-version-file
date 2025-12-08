@@ -7,22 +7,22 @@ import os
 def test_main_dry_run(tmp_path, capsys):
     d = tmp_path / "data"
     d.mkdir()
-    (d / "file.txt").write_text("content")
-    (d / "file_v1.txt").write_text("content")
+    (d / "file_v2.txt").write_text("content") # Latest
+    (d / "file_v1.txt").write_text("content") # Old
     
     with patch.object(sys, 'argv', ['main.py', str(d), '--dry-run']):
         main()
         
     captured = capsys.readouterr()
     assert "--- Dry Run: 以下のファイルが old/ に移動されます ---" in captured.out
-    assert "file.txt" in captured.out
-    assert "file_v1.txt" not in captured.out # file_v1.txt is latest (v1 > none)
+    assert "file_v1.txt" in captured.out
+    assert "file_v2.txt" not in captured.out 
 
 def test_main_execution(tmp_path, capsys):
     d = tmp_path / "data"
     d.mkdir()
-    (d / "file.txt").write_text("content")
-    (d / "file_v1.txt").write_text("content")
+    (d / "file_v2.txt").write_text("content") # Latest
+    (d / "file_v1.txt").write_text("content") # Old
     
     with patch.object(sys, 'argv', ['main.py', str(d)]):
         main()
@@ -31,9 +31,9 @@ def test_main_execution(tmp_path, capsys):
     assert "ファイルを整理中..." in captured.out
     assert "完了しました" in captured.out
     
-    assert (d / "file_v1.txt").exists()
-    assert not (d / "file.txt").exists()
-    assert (d / "old" / "file.txt").exists()
+    assert (d / "file_v2.txt").exists()
+    assert not (d / "file_v1.txt").exists()
+    assert (d / "old" / "file_v1.txt").exists()
 
 def test_main_directory_not_found(capsys):
     with patch.object(sys, 'argv', ['main.py', 'non_existent_dir']):

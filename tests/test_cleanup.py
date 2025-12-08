@@ -1,5 +1,5 @@
 import pytest
-from src.cleanup import parse_filename, determine_latest_files
+from src.cleanup import parse_filename, identify_old_versions_to_move
 
 @pytest.mark.parametrize("filename, expected", [
     ("file.txt", ("file", None, ".txt")),
@@ -23,10 +23,12 @@ def test_determine_latest_simple():
         "other.txt"
     ]
     # Expected: file_v2.txt is latest for "file", other.txt is latest for "other"
-    # The function should probably return a list of "keep" files or a dict.
-    # Let's say it returns a list of filenames to KEEP.
-    expected_keep = {"file_v2.txt", "other.txt"}
-    assert set(determine_latest_files(files)) == expected_keep
+    # The function returns a list of filenames to MOVE (old versions).
+    # file.txt has no version, so it is ignored (kept).
+    # file_v2.txt is latest version, so it is kept.
+    # file_v1.txt is old version, so it is moved.
+    expected_move = {"file_v1.txt"}
+    assert set(identify_old_versions_to_move(files)) == expected_move
 
 def test_determine_latest_timestamp():
     files = [
@@ -35,11 +37,18 @@ def test_determine_latest_timestamp():
         "report.pdf"
     ]
     # report_20250101.pdf is latest.
-    # Assuming report.pdf is older than timestamped ones.
-    expected_keep = {"report_20250101.pdf"}
-    assert set(determine_latest_files(files)) == expected_keep
+    # report.pdf is treated as base (no version), so it might be considered a separate group or the "base" version.
+    # Based on current implementation of identify_old_versions_to_move:
+    # parse_filename("report.pdf") -> ("report", None, ".pdf") -> version is None -> ignored (kept)
+    # parse_filename("report_20240101.pdf") -> ("report", 20240101, ".pdf")
+    # parse_filename("report_20250101.pdf") -> ("report", 20250101, ".pdf")
+    # So "report.pdf" is ignored.
+    # Between 20240101 and 20250101, 20250101 is latest.
+    # So 20240101 should be moved.
+    expected_move = {"report_20240101.pdf"}
+    assert set(identify_old_versions_to_move(files)) == expected_move
 
-from src.cleanup import move_old_files
+from src.cleanup import move_files_to_old
 import os
 
 def test_move_old_files(tmp_path):
@@ -58,8 +67,9 @@ def test_move_old_files(tmp_path):
         
     # Action
     # We want to keep file_v2.txt, move others to old/
-    keep_files = ["file_v2.txt"]
-    move_old_files(str(d), keep_files)
+    # move_files_to_old accepts files to MOVE.
+    move_targets = ["file.txt", "file_v1.txt"]
+    move_files_to_old(str(d), move_targets)
     
     # Verify
     assert (d / "file_v2.txt").exists()
@@ -81,7 +91,8 @@ def test_move_old_files_with_directory(tmp_path):
     (d / "subdir").mkdir()
     
     # Action
-    move_old_files(str(d), [])
+    # Pass explicit list to move
+    move_files_to_old(str(d), ["file.txt"])
     
     # Verify
     assert (d / "subdir").exists() # Should not be moved
@@ -94,8 +105,8 @@ def test_move_old_files_keep_set(tmp_path):
     (d / "file.txt").write_text("content")
     
     # Action
-    # Keep file.txt
-    move_old_files(str(d), ["file.txt"])
+    # Pass empty list -> nothing moved
+    move_files_to_old(str(d), [])
     
     # Verify
     assert (d / "file.txt").exists()

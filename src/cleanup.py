@@ -3,62 +3,63 @@ import os
 import shutil
 from typing import List, Tuple, Optional, Dict
 
-def parse_filename(filename: str) -> Tuple[str, Optional[int], str]:
+def group_and_identify_old_for_pattern(
+    filenames: List[str], 
+    pattern: re.Pattern
+) -> Tuple[List[str], List[str]]:
     """
-    ファイル名を解析する。
-    戻り値: (ベース名, バージョン番号またはNone, 拡張子)
-    """
-    name, ext = os.path.splitext(filename)
-    
-    # パターン 1: 末尾が _v{N} (例: report_v1.txt)
-    match_v = re.search(r'_v(\d+)$', name)
-    if match_v:
-        return name[:match_v.start()], int(match_v.group(1)), ext
+    指定された正規表現パターンに基づき、ファイルリストをグループ化し、古いバージョンを特定する。
+    ファイル名内で最後にパターンに一致した箇所をバージョンとして解釈する。
 
-    # パターン 2: 末尾が _{Timestamp} (8桁以上) (例: data_20250101.csv)
-    match_t = re.search(r'_(\d{8,})$', name)
-    if match_t:
-        return name[:match_t.start()], int(match_t.group(1)), ext
-        
-    # パターン 3: バージョン記述なし、または解析不能
-    return name, None, ext
+    Args:
+        filenames: 処理対象のファイル名リスト。
+        pattern: バージョン情報を抽出するためのコンパイル済み正規表現オブジェクト。
+                 この正規表現は1つのグループ（バージョン文字列）をキャプチャする必要がある。
 
-def identify_old_versions_to_move(filenames: List[str]) -> List[str]:
+    Returns:
+        A tuple containing:
+        - list[str]: 移動対象と判断された古いバージョンのファイル名リスト。
+        - list[str]: このパターンによってグループ化されたすべてのファイル名リスト（最新版も含む）。
     """
-    ファイルリストの中から、「明らかに古いバージョンである」と断定できるファイルのみを特定する。
-    バージョンが付いていないファイルや、各グループの最新版はリストに含まない。
-    """
-    # (ベース名, 拡張子) をキーにしてグループ化
-    groups: Dict[Tuple[str, str], List[Tuple[int, str]]] = {}
     
+    groups: Dict[Tuple[str, str], List[Tuple[Tuple[int, ...], str]]] = {}
+    processed_files_in_pattern = set()
+
     for filename in filenames:
-        base, version, ext = parse_filename(filename)
+        name, ext = os.path.splitext(filename)
+        matches = list(pattern.finditer(name))
         
-        # バージョンが検出できない（怪しい）ファイルは、整理対象外として無視（＝残す）
-        if version is None:
+        if not matches:
             continue
 
-        key = (base, ext)
+        last_match = matches[-1]
+        
+        base_name = name[:last_match.start()]
+        version_str = last_match.group(1)
+        
+        try:
+            version_tuple = tuple(map(int, version_str.split('.')))
+        except (ValueError, TypeError):
+            continue
+
+        key = (base_name, ext)
         if key not in groups:
             groups[key] = []
-        groups[key].append((version, filename))
-    
+        
+        groups[key].append((version_tuple, filename))
+        processed_files_in_pattern.add(filename)
+
     files_to_move = []
-    
-    for key, variants in groups.items():
-        # ファイルが1つしかない場合は、それが最新なので移動しない
+    for _, variants in groups.items():
         if len(variants) < 2:
             continue
 
-        # バージョン番号で降順ソート (新しい順)
         variants.sort(key=lambda x: x[0], reverse=True)
         
-        # 先頭(index 0)は最新なので残す。
-        # 2番目以降(index 1~)は「明らかに古い中間バージョン」なので移動リストに追加
-        for ver, fname in variants[1:]:
+        for _, fname in variants[1:]:
             files_to_move.append(fname)
-        
-    return files_to_move
+            
+    return files_to_move, list(processed_files_in_pattern)
 
 def move_files_to_old(directory: str, target_filenames: List[str]) -> None:
     """

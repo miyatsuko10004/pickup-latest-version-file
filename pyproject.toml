@@ -5,6 +5,9 @@ description = "ディレクトリ内のファイルを整理し、最新版の�
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
+
+[project.scripts]
+pickup-files = "main:main"
 [project.optional-dependencies]
 dev = [
     "pytest>=9.0.1",
@@ -13,3 +16,6 @@ dev = [
 
 [tool.pytest.ini_options]
 pythonpath = "."
+
+[tool.uv]
+package = true

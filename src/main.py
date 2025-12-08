@@ -1,6 +1,6 @@
 import os
 import argparse
-from src.cleanup import identify_old_versions_to_move, move_files_to_old
+from cleanup import identify_old_versions_to_move, move_files_to_old
 
 def main():
     parser = argparse.ArgumentParser(description="ディレクトリ内のファイルを整理し、明らかに古いバージョンのみをoldディレクトリに移動します。")

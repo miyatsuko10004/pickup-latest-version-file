@@ -27,7 +27,7 @@ uv sync
 ### 基本的な実行
 
 ```bash
-uv run python src/main.py /path/to/target_directory
+uv run -m src.main /path/to/target_directory
 ```
 
 ### ドライラン（確認モード）
@@ -35,7 +35,7 @@ uv run python src/main.py /path/to/target_directory
 ファイルを移動せず、何が移動されるかを確認する場合：
 
 ```bash
-uv run python src/main.py /path/to/target_directory --dry-run
+uv run -m src.main /path/to/target_directory --dry-run
 ```
 
 ### 設定ファイル (.env) を使用する場合

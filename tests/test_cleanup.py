@@ -23,37 +23,44 @@ from src.cleanup import group_and_identify_old_for_pattern, move_files_to_old
     # Scenario 3: Simple Integer Versioning (v prefix)
     (
         ["data_v1.csv", "data_v10.csv", "data_v2.csv"],
-        r'[_-][vt]?(\d+)',
+        r'[_-][vtr]?(\d+)',
         ["data_v2.csv", "data_v1.csv"],
         ["data_v1.csv", "data_v10.csv", "data_v2.csv"]
     ),
     # Scenario 4: No matches
     (
         ["file.txt", "document.pdf"],
-        r'[_-][vt]?(\d+)',
+        r'[_-][vtr]?(\d+)',
         [],
         []
     ),
     # Scenario 5: Multiple groups, one match
     (
         ["data_v1.csv", "log_v2.txt", "data_v3.csv"],
-        r'[_-][vt]?(\d+)',
+        r'[_-][vtr]?(\d+)',
         ["data_v1.csv"],
         ["data_v1.csv", "log_v2.txt", "data_v3.csv"]
     ),
     # Scenario 6: Files with multiple version-like numbers
     (
         ["file_2023_v1.txt", "file_2023_v2.txt", "file_2024_v1.txt"],
-        r'[_-][vt]?(\d+)', # Matches the last number
+        r'[_-][vtr]?(\d+)', # Matches the last number
         ["file_2023_v1.txt"], # file_2023_v2 is latest for file_2023 group
         ["file_2023_v1.txt", "file_2023_v2.txt", "file_2024_v1.txt"]
     ),
     # Scenario 7: T-based versioning
     (
         ["log_t1.txt", "log_t10.txt", "log_t2.txt"],
-        r'[_-][vt]?(\d+)',
+        r'[_-][vtr]?(\d+)',
         ["log_t2.txt", "log_t1.txt"],
         ["log_t1.txt", "log_t10.txt", "log_t2.txt"]
+    ),
+    # Scenario 8: R-based versioning
+    (
+        ["release_r1.zip", "release_r5.zip", "release_r2.zip"],
+        r'[_-][vtr]?(\d+)',
+        ["release_r2.zip", "release_r1.zip"],
+        ["release_r1.zip", "release_r5.zip", "release_r2.zip"]
     )
 ])
 def test_group_and_identify_old_for_pattern(filenames, pattern_str, expected_move, expected_processed):

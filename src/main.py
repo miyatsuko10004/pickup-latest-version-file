@@ -1,16 +1,23 @@
 import os
 import argparse
 import re
+from dotenv import load_dotenv
 from cleanup import group_and_identify_old_for_pattern, move_files_to_old
 
 def main():
+    load_dotenv()
+
     parser = argparse.ArgumentParser(description="ディレクトリ内のファイルを整理し、明らかに古いバージョンのみをoldディレクトリに移動します。")
-    parser.add_argument("directory", help="整理対象のディレクトリパス")
+    parser.add_argument("directory", nargs="?", help="整理対象のディレクトリパス")
     parser.add_argument("--dry-run", action="store_true", help="実際の移動を行わず、移動されるファイルを表示します。")
     
     args = parser.parse_args()
-    target_dir = args.directory
+    target_dir = args.directory or os.getenv("TARGET_DIRECTORY")
     
+    if not target_dir:
+        print("エラー: ディレクトリが指定されていません。引数で指定するか、.envファイルに TARGET_DIRECTORY を設定してください。")
+        return
+
     if not os.path.exists(target_dir):
         print(f"エラー: ディレクトリが見つかりません: {target_dir}")
         return

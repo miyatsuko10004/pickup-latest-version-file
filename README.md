@@ -38,6 +38,25 @@ uv run python src/main.py /path/to/target_directory
 uv run python src/main.py /path/to/target_directory --dry-run
 ```
 
+### 設定ファイル (.env) を使用する場合
+
+`.env` ファイルを作成し、`TARGET_DIRECTORY` を指定することで、ディレクトリ指定を省略できます。
+`.env.example` をコピーして `.env` にリネームし、パスを編集してください。
+
+```bash
+cp .env.example .env
+# .env を編集して TARGET_DIRECTORY を設定
+```
+
+実行時、引数でディレクトリを指定した場合は、引数が優先されます。
+
+### バッチファイルでの実行 (Windows)
+
+`pickup_files.bat` をダブルクリックするだけで実行できます。
+`.env` ファイルの設定が使用されます。
+
+ディレクトリフォルダを `pickup_files.bat` にドラッグ＆ドロップすることでも実行可能です（この場合、ドラッグしたフォルダが対象になります）。
+
 ## プロジェクト構成
 
 ```
